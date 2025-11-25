@@ -23,14 +23,20 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadTank();
-    _sub = BluetoothService.instance.heightStream.listen((h) async {
-      setState(() => _currentHeight = h);
-      await _processMeasurement(h);
+
+    // Conecta ao ESP32 quando a HomeScreen iniciar
+    BluetoothService.instance.connectToESP32();
+
+    // Escuta o stream de altura
+    _sub = BluetoothService.instance.heightStream.listen((height) async {
+      setState(() => _currentHeight = height);
+      await _processMeasurement(height);
     });
   }
 
   @override
   void dispose() {
+    // NÃO desconecta o ESP32 para manter a conexão viva
     _sub?.cancel();
     super.dispose();
   }
@@ -88,7 +94,20 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Center(
         child: _tank == null
             ? const CircularProgressIndicator()
-            : WaterLevelWidget(percentage: _percentage, liters: _liters),
+            : StreamBuilder<double>(
+                stream: BluetoothService.instance.heightStream,
+                builder: (context, snapshot) {
+                  final height = snapshot.data ?? _currentHeight;
+                  // Atualiza os valores de litros e porcentagem com base no height
+                  if (_tank != null) {
+                    _processMeasurement(height);
+                  }
+                  return WaterLevelWidget(
+                    percentage: _percentage,
+                    liters: _liters,
+                  );
+                },
+              ),
       ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.bluetooth_searching),

@@ -25,6 +25,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   Widget build(BuildContext context) {
     final fmt = DateFormat('yyyy-MM-dd HH:mm');
+
     return Scaffold(
       appBar: AppBar(title: const Text('Histórico')),
       body: ListView.builder(

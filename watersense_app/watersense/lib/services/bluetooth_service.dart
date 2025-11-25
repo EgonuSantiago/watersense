@@ -14,15 +14,23 @@ class BluetoothService {
 
   BluetoothConnection? _connection;
   bool _isConnected = false;
+  bool _isConnecting = false; // evita múltiplas tentativas simultâneas
 
   Timer? _mockTimer;
   double _current = 1.0;
-  bool _mock = false; // comece com simulação desativada
+  bool _mock = false;
 
-  /// Alterna o modo de simulação (para testar sem ESP)
-  void toggleMockStream() {
-    _mock = !_mock;
+  bool? get isConnected => null;
+
+  /// Alterna o modo de simulação
+  void toggleMockStream({bool forceOn = false}) {
+    if (forceOn)
+      _mock = true;
+    else
+      _mock = !_mock;
+
     if (_mock) {
+      _mockTimer?.cancel();
       _mockTimer = Timer.periodic(const Duration(seconds: 3), (_) {
         final choices = [-0.02, -0.01, 0.0, 0.01, 0.02];
         choices.shuffle();
@@ -35,25 +43,50 @@ class BluetoothService {
     }
   }
 
-  /// Conecta ao ESP32 via Bluetooth
+  /// Conecta ao ESP32 via Bluetooth clássico
   Future<void> connectToESP32() async {
+    if (_isConnected || _isConnecting) return;
+
+    _isConnecting = true;
+
     try {
       final prefs = await SharedPreferences.getInstance();
       List<BluetoothDevice> bondedDevices = await FlutterBluetoothSerial
           .instance
           .getBondedDevices();
 
+      if (bondedDevices.isEmpty) {
+        print('⚠️ Nenhum dispositivo pareado encontrado.');
+        await _loadOfflineData();
+        toggleMockStream(forceOn: true); // ativa mock
+        _isConnecting = false;
+        return;
+      }
+
       final device = bondedDevices.firstWhere(
         (d) => d.name?.contains("ESP32") ?? false,
         orElse: () => bondedDevices.first,
       );
 
-      _connection = await BluetoothConnection.toAddress(device.address);
+      try {
+        _connection = await BluetoothConnection.toAddress(
+          device.address,
+        ).timeout(const Duration(seconds: 10));
+      } catch (e) {
+        print('❌ Timeout ou erro ao conectar ao ESP32: $e');
+        _isConnected = false;
+        await _loadOfflineData();
+        toggleMockStream(forceOn: true);
+        _isConnecting = false;
+        return;
+      }
+
       _isConnected = true;
       print('✅ Conectado a ${device.name}');
 
-      _connection!.input!
-          .listen((Uint8List data) {
+      // Recebe dados
+      _connection!.input
+          ?.listen((Uint8List data) {
             final message = utf8.decode(data);
             final height = double.tryParse(message.trim());
             if (height != null) {
@@ -61,33 +94,44 @@ class BluetoothService {
               _saveOfflineData(height);
             }
           })
-          .onDone(() {
+          .onDone(() async {
             _isConnected = false;
             print('⚠️ Conexão encerrada.');
+            toggleMockStream(forceOn: true);
+
+            // tenta reconectar automaticamente
+            await Future.delayed(const Duration(seconds: 3));
+            await connectToESP32();
           });
     } catch (e) {
-      print('❌ Erro ao conectar: $e');
+      print('❌ Erro geral ao conectar: $e');
       _isConnected = false;
       await _loadOfflineData();
+      toggleMockStream(forceOn: true);
+    } finally {
+      _isConnecting = false;
     }
   }
 
-  /// Salva o último valor localmente (para modo offline)
+  /// Salva o último valor localmente
   Future<void> _saveOfflineData(double height) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setDouble('last_height', height);
   }
 
-  /// Carrega o último valor salvo caso o Bluetooth esteja desconectado
+  /// Carrega o último valor salvo se desconectado
   Future<void> _loadOfflineData() async {
     final prefs = await SharedPreferences.getInstance();
     final last = prefs.getDouble('last_height') ?? 0.0;
     _heightController.add(last);
   }
 
-  void dispose() {
+  /// Desconecta do ESP32 (usar somente quando sair do app)
+  Future<void> disconnect() async {
+    await _connection?.close();
+    _connection = null;
+    _isConnected = false;
     _mockTimer?.cancel();
-    _connection?.dispose();
-    _heightController.close();
+    // NÃO fecha _heightController
   }
 }

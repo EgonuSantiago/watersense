@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../models/water_tank.dart';
 import '../services/storage_service.dart';
+import '../services/bluetooth_service.dart';
 
 class ConfigScreen extends StatefulWidget {
   @override
@@ -20,14 +23,31 @@ class _ConfigScreenState extends State<ConfigScreen> {
   late TextEditingController _topRadiusController;
   late TextEditingController _bottomRadiusController;
 
+  bool _isConnected = false;
+  StreamSubscription? _heightSubscription;
+
   @override
   void initState() {
     super.initState();
+
+    // 🔧 Inicialização dos controllers (SEU ERRO ESTAVA AQUI)
     _tariffController = TextEditingController();
     _heightController = TextEditingController();
     _topRadiusController = TextEditingController();
     _bottomRadiusController = TextEditingController();
-    _load();
+
+    _loadTank();
+
+    // ► Conectando BLE
+    BluetoothService.instance.connectToESP32();
+
+    // ► Escutando leituras
+    _heightSubscription = BluetoothService.instance.heightStream.listen((
+      h,
+    ) async {
+      setState(() {}); // atualiza tela se quiser mostrar h
+      await _processMeasurement(h);
+    });
   }
 
   @override
@@ -36,10 +56,11 @@ class _ConfigScreenState extends State<ConfigScreen> {
     _heightController.dispose();
     _topRadiusController.dispose();
     _bottomRadiusController.dispose();
+    _heightSubscription?.cancel();
     super.dispose();
   }
 
-  void _load() async {
+  Future<void> _loadTank() async {
     final tank = await StorageService.instance.getWaterTank();
     if (tank != null) {
       setState(() {
@@ -49,6 +70,7 @@ class _ConfigScreenState extends State<ConfigScreen> {
         _topRadius = tank.topRadius;
         _bottomRadius = tank.bottomRadius;
         _height = tank.tankHeight;
+
         _tariffController.text = _tariff.toString();
         _heightController.text = _height.toString();
         _topRadiusController.text = _topRadius.toString();
@@ -80,6 +102,17 @@ class _ConfigScreenState extends State<ConfigScreen> {
     Navigator.pop(context);
   }
 
+  void _toggleConnection() async {
+    if (_isConnected) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Conexão BLE será mantida")));
+    } else {
+      await BluetoothService.instance.connectToESP32();
+      setState(() => _isConnected = BluetoothService.instance.isConnected!);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -89,8 +122,19 @@ class _ConfigScreenState extends State<ConfigScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text('ESP32: ${_isConnected ? "Conectado" : "Desconectado"}'),
+            const SizedBox(height: 10),
+
+            ElevatedButton(
+              onPressed: _toggleConnection,
+              child: Text(_isConnected ? 'Manter Conexão' : 'Conectar ESP32'),
+            ),
+
+            const Divider(height: 30),
+
             const Text('Tipo de caixa de água:'),
             const SizedBox(height: 10),
+
             DropdownButton<String>(
               value: _type,
               items: const [
@@ -106,7 +150,9 @@ class _ConfigScreenState extends State<ConfigScreen> {
               onChanged: (v) => setState(() => _type = v),
               hint: const Text('Selecione o tipo'),
             ),
+
             const SizedBox(height: 20),
+
             const Text('Capacidade (litros):'),
             Slider(
               min: 100,
@@ -116,12 +162,15 @@ class _ConfigScreenState extends State<ConfigScreen> {
               label: '${_capacity.round()} L',
               onChanged: (v) => setState(() => _capacity = v),
             ),
+
             const SizedBox(height: 10),
+
             const Text('Tarifa (R\$ por litro):'),
             TextField(
               controller: _tariffController,
               keyboardType: TextInputType.numberWithOptions(decimal: true),
             ),
+
             if (_type == 'tronco') ...[
               const SizedBox(height: 20),
               const Text('Altura da caixa (m):'),
@@ -129,12 +178,14 @@ class _ConfigScreenState extends State<ConfigScreen> {
                 controller: _heightController,
                 keyboardType: TextInputType.numberWithOptions(decimal: true),
               ),
+
               const SizedBox(height: 10),
               const Text('Raio superior (m):'),
               TextField(
                 controller: _topRadiusController,
                 keyboardType: TextInputType.numberWithOptions(decimal: true),
               ),
+
               const SizedBox(height: 10),
               const Text('Raio inferior (m):'),
               TextField(
@@ -142,11 +193,17 @@ class _ConfigScreenState extends State<ConfigScreen> {
                 keyboardType: TextInputType.numberWithOptions(decimal: true),
               ),
             ],
+
             const SizedBox(height: 20),
+
             ElevatedButton(onPressed: _save, child: const Text('Salvar')),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _processMeasurement(double h) async {
+    // implementar depois
   }
 }
