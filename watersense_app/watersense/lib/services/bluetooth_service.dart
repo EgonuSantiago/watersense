@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/services.dart' show Uint8List;
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../models/water_tank.dart';
+import 'storage_service.dart';
 
 class BluetoothService {
   BluetoothService._internal();
@@ -14,13 +16,13 @@ class BluetoothService {
 
   BluetoothConnection? _connection;
   bool _isConnected = false;
-  bool _isConnecting = false; // evita múltiplas tentativas simultâneas
+  bool _isConnecting = false;
 
   Timer? _mockTimer;
   double _current = 1.0;
   bool _mock = false;
 
-  bool? get isConnected => null;
+  bool get isConnected => _isConnected;
 
   /// Alterna o modo de simulação
   void toggleMockStream({bool forceOn = false}) {
@@ -29,8 +31,9 @@ class BluetoothService {
     else
       _mock = !_mock;
 
+    _mockTimer?.cancel();
+
     if (_mock) {
-      _mockTimer?.cancel();
       _mockTimer = Timer.periodic(const Duration(seconds: 3), (_) {
         final choices = [-0.02, -0.01, 0.0, 0.01, 0.02];
         choices.shuffle();
@@ -38,8 +41,6 @@ class BluetoothService {
         if (_current < 0) _current = 0;
         _heightController.add(_current);
       });
-    } else {
-      _mockTimer?.cancel();
     }
   }
 
@@ -58,7 +59,7 @@ class BluetoothService {
       if (bondedDevices.isEmpty) {
         print('⚠️ Nenhum dispositivo pareado encontrado.');
         await _loadOfflineData();
-        toggleMockStream(forceOn: true); // ativa mock
+        toggleMockStream(forceOn: true);
         _isConnecting = false;
         return;
       }
@@ -83,6 +84,13 @@ class BluetoothService {
 
       _isConnected = true;
       print('✅ Conectado a ${device.name}');
+
+      // Envia tipo de caixa selecionado
+      final selectedTank = await StorageService.instance.getWaterTank();
+      if (selectedTank != null && _connection != null) {
+        _connection!.output.add(utf8.encode('${selectedTank.capacityLiter}\n'));
+        await _connection!.output.allSent;
+      }
 
       // Recebe dados
       _connection!.input
@@ -126,12 +134,11 @@ class BluetoothService {
     _heightController.add(last);
   }
 
-  /// Desconecta do ESP32 (usar somente quando sair do app)
+  /// Desconecta do ESP32
   Future<void> disconnect() async {
     await _connection?.close();
     _connection = null;
     _isConnected = false;
     _mockTimer?.cancel();
-    // NÃO fecha _heightController
   }
 }

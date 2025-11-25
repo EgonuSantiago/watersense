@@ -1,0 +1,37 @@
+name: watersense
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.9.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  flutter_bluetooth_serial: ^0.4.0   # versão compatível
+  shared_preferences: ^2.1.1
+  permission_handler: ^11.0.0        # necessário para pedir permissões de Bluetooth/Localização
+  intl: ^0.20.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  # Se você tiver assets, descomente e adicione aqui
+  # assets:
+  #   - assets/images/
+
+  # Se você tiver fonts, descomente e adicione aqui
+  # fonts:
+  #   - family: Schyler
+  #     fonts:
+  #       - asset: fonts/Schyler-Regular.ttf
+#       - asset: fonts/Schyler-Italic.ttf
+#         style: italic

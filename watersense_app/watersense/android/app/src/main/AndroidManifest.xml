@@ -2,23 +2,21 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.watersense">
 
-    <!-- Permissões necessárias -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    
-    <!-- Bluetooth antigo (compatibilidade Android < 12) -->
+    <!-- Bluetooth -->
     <uses-permission android:name="android.permission.BLUETOOTH"/>
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" tools:ignore="MissingPermission"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" tools:ignore="MissingPermission"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" tools:ignore="MissingPermission"/>
 
-    <!-- Para Android 12+ -->
-    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"
-        android:required="false"
-        tools:ignore="MissingPermission"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
-        android:required="false"
-        tools:ignore="MissingPermission"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE"
-        android:required="false"
-        tools:ignore="MissingPermission"/>
+    <!-- Localização só para Android < 12 BLE -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
+    <!-- Internet e notificações -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
     <application
         android:label="watersense"
@@ -29,7 +27,6 @@
             android:name=".MainActivity"
             android:exported="true"
             android:launchMode="singleTop"
-            android:taskAffinity=""
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
@@ -37,8 +34,7 @@
 
             <meta-data
                 android:name="io.flutter.embedding.android.NormalTheme"
-                android:resource="@style/NormalTheme"
-            />
+                android:resource="@style/NormalTheme" />
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -51,10 +47,4 @@
             android:value="2" />
     </application>
 
-    <queries>
-        <intent>
-            <action android:name="android.intent.action.PROCESS_TEXT"/>
-            <data android:mimeType="text/plain"/>
-        </intent>
-    </queries>
 </manifest>

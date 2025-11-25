@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - Water Sense</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body>         
+
+    <header>
+        <div class="logo">WATER <span>SENSE</span></div>
+        <nav>
+          <a href="home.html">HOME</a>
+          <a href="cadastro.html">CADASTRO</a>
+          <a href="compra.html">COMPRA</a>
+          <a href="assinatura.html">ASSINATURA</a>
+        </nav>
+      </header>
+    <footer>
+
+      
+    <!-- FORMULÁRIO -->
+    <div class="container">
+        <h2>CADASTRO</h2>
+        <form id="formCadastro">
+            <input type="email" id="email" placeholder="E-MAIL" required>
+            <input type="tel" id="telefone" placeholder="TELEFONE" maxlength="15" required>
+            <input type="text" id="usuario" placeholder="USUÁRIO" required>
+            <input type="password" id="senha" placeholder="SENHA" required>
+            <input type="text" id="nome" placeholder="NOME COMPLETO" required>
+            <input type="text" id="cep" placeholder="CEP" maxlength="9" required>
+            <input type="text" id="endereco" placeholder="ENDEREÇO" required>
+            <input type="text" id="numero" placeholder="NÚMERO" required>
+            <input type="text" id="complemento" placeholder="COMPLEMENTO">
+            <button type="submit" class="btn">Cadastrar</button>
+        </form>
+
+        <div class="link">
+            Já tem uma conta? <a href="#">Clique aqui</a>
+        </div>
+
+        <div class="contato">
+            <p>Contato:</p>
+            <div class="contato-icons">
+                <a href="mailto:watersense@email.com"><i class="fa-solid fa-envelope"></i></a>
+                <a href="https://wa.me/550000000000" target="_blank"><i class="fa-brands fa-whatsapp"></i></a>
+                <a href="https://instagram.com" target="_blank"><i class="fa-brands fa-instagram"></i></a>
+            </div>
+        </div>
+    </div>
+
+    
+    <script src="script.js"></script>
+</body>
+</html>

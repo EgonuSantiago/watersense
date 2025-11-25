@@ -1,0 +1,136 @@
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background-color: #082936;
+    color: white;
+    padding-top: 0px; /* Altura da navbar */
+  /*LOGO*/
+}
+  .logo {
+    font-size: 40px;
+    font-weight: bold;
+  }
+  .logo span {
+    color: #00b3ff;
+  }
+
+  header {
+     background-color: #002d3d;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 26px 60px;
+  }
+  nav a {
+    color: rgb(254, 254, 254);
+    margin: 0 15px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 21px;
+  }
+  
+.container {
+    max-width: 400px;
+    margin: 30px auto;
+    padding: 20px;
+    background-color: #003845;
+    border-radius: 15px;
+    box-shadow: 0px 0px 15px rgba(0,0,0,0.4);
+
+    /* Centralizar elementos internos */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.container form {
+    width: 100%; /* Garantir que os inputs ocupem a largura total */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.container input {
+    width: 90%; /* Deixar com respiro nas laterais */
+}
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* FORM */
+input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 12px;
+    border: none;
+    border-radius: 20px;
+    outline: none;
+    font-size: 14px;
+}
+
+.btn {
+    background-color: #082936;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+    width: 100%;
+    border: none;
+    padding: 10px;
+    border-radius: 20px;
+}
+
+.btn:hover {
+    background-color: #145681;
+}
+
+/* TEXTO LINK */
+.link {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.link a {
+    color: #145681;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+/* CONTATO */
+.contato {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.contato-icons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.contato-icons a {
+    font-size: 24px;
+    color: white;
+    transition: 0.3s;
+}
+
+.contato-icons a:hover {
+    color: #145681;
+}
+
+/* RESPONSIVIDADE */
+@media (max-width: 500px) {
+    .container {
+        width: 90%;
+    }
+}
+
